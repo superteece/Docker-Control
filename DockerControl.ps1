@@ -31,9 +31,11 @@ function main
     banner
     Write-Host "What would you like to do?"
     Write-Host "1. Create Kali Docker Machine"
-    Write-Host "2. Pull Official Kali Docker Image"
-    Write-Host "3. Launch Kali Within Powershell"
-    #Write-Host "4. Auto Validate signatures of all processes"
+    Write-Host "2. Start/Stop Kali Docker Machine"
+    Write-Host "3. Set Current Powershell to proper env for Docker"
+    Write-Host "4. Pull Official Kali Docker Image"
+    Write-Host "5. Start New Kali Container"
+    Write-Host "6. Interact with Existing Containers"
     Write-Host ""
     Write-Host "0. Exit"
     ""
@@ -41,10 +43,12 @@ function main
     Switch ($menuSelect)
        {
         1 {makeMachine}
-        2 {pullKali}
-        3 {launchKali}
-        #4 {autoCheck}
-        0 {Clear-Host}
+        2 {toggleMachine}
+        3 {setEnv}
+        4 {pullKali}
+        5 {launchNewKali}
+        6 {containerInteract}
+        0 {Clear-Host; break}
        Default {main}
      }
 }
@@ -65,22 +69,20 @@ function pullKali
     main
 }
 
-#Set env for kali and launch in a new instance of Powershell
-function launchKali
+#Set env for PowerShell to properly execute docker.exe commands
+function setEnv
 {
-    
+    docker-machine env --shell powershell kali | Invoke-Expression
 }
 
-#Automatically check the signature validity of each running process
-function autoCheck
+#Start a new container based on the official Kali Docker image
+function launchNewKali
 {
-foreach ($item in Get-Process)
-    {
-    $procValidate = Get-Process $item.Name | select -Expand Path | select -Unique
-    Get-AuthenticodeSignature "$procValidate"
-    }
-    end
+    setEnv
+    docker run -t -i kalilinux/kali-linux-docker /bin/bash
 }
+
+#Display a list of available containers
 
 #Runs at the end of each operation to give the option of returning to the main menu
 function end
